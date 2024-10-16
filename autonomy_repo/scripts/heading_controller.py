@@ -11,7 +11,12 @@ from asl_tb3_msgs.msg import TurtleBotState
 class HeadingController(BaseHeadingController):
     def __init__(self) -> None:
         super().__init__()
-        self.kp = 2.0
+        self.declare_parameter("kp", 2.0)
+        
+    @property
+    def kp(self) -> float:
+        return self.get_parameter("kp").value   
+        
 
     def compute_control_with_goal(self, curr_state: TurtleBotState, des_state: TurtleBotState) -> TurtleBotControl:
         curr_theta = curr_state.theta
