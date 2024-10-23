@@ -273,6 +273,9 @@ class Navigator(BaseNavigator):
         if t == 0:
             self.V_prev = np.sqrt(xd_d**2 + yd_d**2)
 
+        if abs(self.V_prev) < self.V_PREV_THRESH:
+            self.V_prev = self.V_PREV_THRESH
+
         u1 = xdd_d + self.kpx*(x_d-x) + self.kdx*(xd_d - self.V_prev*np.cos(th))
         u2 = ydd_d + self.kpy*(y_d-y) + self.kdy*(yd_d - self.V_prev*np.sin(th))
 
@@ -286,7 +289,7 @@ class Navigator(BaseNavigator):
         V = self.V_prev + dt*aw[0]
         om = aw[1]
 
-        if V < self.V_PREV_THRESH:
+        if abs(V) < self.V_PREV_THRESH:
             V = self.V_PREV_THRESH
 
         self.t_prev = t
