@@ -14,6 +14,8 @@ install(PROGRAMS
     scripts/navigator.py
     scripts/p3_plot.py
     scripts/perception_controller.py
+    scripts/keyboard_teleop.py
+    scripts/icp_node.py
     DESTINATION lib/${PROJECT_NAME}
 )
 
