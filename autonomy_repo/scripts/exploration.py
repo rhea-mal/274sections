@@ -39,10 +39,15 @@ class Exploration(Node):
         self.map_sub = self.create_subscription(OccupancyGrid, "/map", self.map_callback, 10)
         self.state_sub = self.create_subscription(TurtleBotState, "/state", self.state_callback, 10)
         self.nav_success_sub = self.create_subscription(Bool, "/nav_success", self.nav_success_callback, 10)
+        self.detector_bool_sub = self.create_subscription(Bool, "/detector_bool", self.detector_bool_callback, 10)
 
         self.next_pt_pub = self.create_publisher(TurtleBotState, "/cmd_nav", 10)
         self.nav_success_pub = self.create_publisher(Bool, "/nav_success", 10)
-        print('test1')
+
+        self.active=True
+        self.detect_time=0.0
+        self.last_time_true = -2.0
+        self.first_publish = False
 
 
 
@@ -64,10 +69,33 @@ class Exploration(Node):
 
     def nav_success_callback(self, msg: Bool):
         self.nav_success = msg.data
-        if self.nav_success:
+        if self.nav_success and self.active:
             self.go_to_closest_frontier()
 
-    
+
+    def detector_bool_callback(self, msg: Bool):
+        self.detector_bool = msg.data
+        current_time = self.get_clock().now().nanoseconds / 1e9
+        if self.detector_bool and current_time - self.last_time_true > 2:
+            if self.active:
+                self.active = False
+                self.detect_time = current_time
+                self.first_publish = True
+        
+        if current_time < self.detect_time + 5:
+            self.next_pt_pub.publish(self.curr_state)
+        else: 
+            self.active = True
+            if self.first_publish:
+                self.nav_success_pub.publish(Bool(data=True))
+                self.first_publish = False
+                self.last_time_true = current_time
+
+
+
+        
+
+
     def go_to_closest_frontier(self):
         
         if self.occupancy is not None and self.curr_state is not None and not self.exporation_finished:
@@ -78,6 +106,7 @@ class Exploration(Node):
                 message = TurtleBotState()
                 message.x = closest_state[0]
                 message.y = closest_state[1]
+                message.theta = 0.0
 
                 self.next_pt_pub.publish(message)
 

@@ -160,8 +160,9 @@ class AStar(object):
             x_curr = self.find_best_est_cost_through()
 
             if x_curr == self.x_goal:
-                solution_found = True
-                break
+                self.path = self.reconstruct_path()
+                return True
+        
             
             self.open_set.remove(x_curr)
             self.closed_set.add(x_curr)
@@ -184,9 +185,9 @@ class AStar(object):
                 self.cost_to_arrive[neighbor] = tent_cost_to_arrive
                 self.est_cost_through[neighbor] = tent_cost_to_arrive + self.distance(neighbor, self.x_goal)
         
-        self.path = self.reconstruct_path()
+        
 
-        return solution_found
+        return False
     
 
 
